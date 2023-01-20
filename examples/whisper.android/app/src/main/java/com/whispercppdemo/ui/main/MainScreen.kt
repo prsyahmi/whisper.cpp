@@ -18,8 +18,9 @@ fun MainScreen(viewModel: MainScreenViewModel) {
     MainScreen(
         canTranscribe = viewModel.canTranscribe,
         isRecording = viewModel.isRecording,
+        vad = viewModel.vadDetection,
+        debugLog = viewModel.debugLog,
         messageLog = viewModel.dataLog,
-        onTranscribeSampleTapped = viewModel::transcribeSample,
         onRecordTapped = viewModel::toggleRecord
     )
 }
@@ -29,8 +30,9 @@ fun MainScreen(viewModel: MainScreenViewModel) {
 private fun MainScreen(
     canTranscribe: Boolean,
     isRecording: Boolean,
+    vad: String,
+    debugLog: String,
     messageLog: String,
-    onTranscribeSampleTapped: () -> Unit,
     onRecordTapped: () -> Unit
 ) {
     Scaffold(
@@ -46,13 +48,14 @@ private fun MainScreen(
                 .padding(16.dp)
         ) {
             Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                TranscribeSampleButton(enabled = canTranscribe, onClick = onTranscribeSampleTapped)
                 RecordButton(
                     enabled = canTranscribe,
                     isRecording = isRecording,
                     onClick = onRecordTapped
                 )
             }
+            Text(text=vad, Modifier.padding(bottom=5.dp))
+            Text(text=debugLog, Modifier.padding(bottom=5.dp))
             MessageLog(messageLog)
         }
     }
@@ -61,13 +64,6 @@ private fun MainScreen(
 @Composable
 private fun MessageLog(log: String) {
     Text(modifier = Modifier.verticalScroll(rememberScrollState()), text = log)
-}
-
-@Composable
-private fun TranscribeSampleButton(enabled: Boolean, onClick: () -> Unit) {
-    Button(onClick = onClick, enabled = enabled) {
-        Text("Transcribe sample")
-    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -87,7 +83,7 @@ private fun RecordButton(enabled: Boolean, isRecording: Boolean, onClick: () -> 
         } else {
             micPermissionState.launchPermissionRequest()
         }
-     }, enabled = enabled) {
+    }, enabled = enabled) {
         Text(
             if (isRecording) {
                 "Stop recording"
